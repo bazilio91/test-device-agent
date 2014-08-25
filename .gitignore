@@ -1,0 +1,7 @@
+# IDE
+/.idea
+/test-device-agent.iml
+
+/node_modules
+/npm-debug.log
+/config.json
