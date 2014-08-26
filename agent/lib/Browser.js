@@ -1,11 +1,13 @@
 var spawn = require('child_process').spawn,
     http = require('http'),
     _ = require('lodash'),
-    io = require('socket.io-client');
+    io = require('socket.io-client'),
+    EventEmitter = require('events').EventEmitter;
 
 var Browser = function (options, logger) {
     var browser = this;
 
+    this.events = new EventEmitter();
     this.userAgent = false;
     this.socket = null;
     _.extend(this, options);
@@ -13,11 +15,13 @@ var Browser = function (options, logger) {
     function onServerHello() {
         logger.trace('Sending client_hello for %s', browser.name);
         browser.socket.emit('client_hello', {'user_agent': browser.userAgent});
+        browser.events.emit('connected');
     }
 
     function onServerRedirect(data) {
         logger.info('Server redirect: %s', data.url);
         browser.open(data.url);
+        browser.events.emit('redirect', data.url);
     }
 
     this.open = function (url, returnUrl) {
@@ -40,7 +44,7 @@ var Browser = function (options, logger) {
             browserProcess.kill();
             server.close();
 
-
+            browser.events.emit('checked');
             logger.info('Browser %s checked & ready.', browser.name);
             cb(browser);
         }).listen(function () {
@@ -52,7 +56,6 @@ var Browser = function (options, logger) {
     this.listen = function (url) {
         logger.trace('Browser %s connecting to %s', browser.name, url);
         var socket = browser.socket = io.connect(url);
-
         socket.on('server_hello', onServerHello);
         socket.on('redirect', onServerRedirect);
         socket.on('message', function (data) {

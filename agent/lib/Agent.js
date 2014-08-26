@@ -6,7 +6,7 @@ var async = require('async'),
 
 var Agent = function (config, logger) {
     this.events = new EventEmitter();
-    var browsers = _.map(config.browsers, function (options) {
+    var browsers = this.browsers = _.map(config.browsers, function (options) {
             return new Browser(options, logger);
         }),
         agent = this;

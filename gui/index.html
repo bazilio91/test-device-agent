@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<script>
+    var agent = null,
+            fs = require('fs'),
+            platform = require('os').platform(),
+            _ = require('lodash');
+
+    if (fs.existsSync('./agent/index.js')) {
+        agent = require('./agent/index.js');
+    } else {
+        agent = require('../agent/index.js');
+    }
+
+
+    // Load native UI library
+    var gui = require('nw.gui'),
+            win = gui.Window.get();
+
+    win.hide();
+
+    var icon;
+    if (platform === 'darwin') {
+        icon = 'assets/icon.tiff';
+    } else {
+        icon = 'assets/icon-16.png';
+    }
+    // Create a tray icon
+    var tray = new gui.Tray({ icon: icon, alticon: 'assets/icon-alt.tiff' });
+
+    // Give it a menu
+    var menu = new gui.Menu();
+    _.each(agent.browsers, function (browser) {
+        browser.gui = {
+            tray: new gui.MenuItem({label: browser.name, enabled: browser.userAgent !== false})
+        };
+
+        browser.events.on('checked', function () {
+            browser.gui.tray.enabled = browser.userAgent !== false;
+        });
+
+        menu.append(browser.gui.tray);
+    });
+
+    tray.menu = menu;
+</script>
+
+</body>
+</html>

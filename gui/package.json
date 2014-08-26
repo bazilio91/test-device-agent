@@ -1,0 +1,11 @@
+{
+    "name": "test-device-agent",
+    "version": "0.0.0",
+    "description": "",
+    "main": "index.html",
+    "author": "Vasily Ostanin <bazilio91@gmail.com>",
+    "license": "ISC",
+    "window": {
+
+    }
+}
