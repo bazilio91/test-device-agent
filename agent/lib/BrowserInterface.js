@@ -2,16 +2,21 @@ var spawn = require('child_process').spawn,
     http = require('http'),
     _ = require('lodash'),
     os = require('os'),
+    fs = require('fs'),
     io = require('socket.io-client'),
     EventEmitter = require('events').EventEmitter;
 
-var Browser = function (options, logger) {
+var checkFile = fs.readFileSync(__dirname + '/assets/check.html');
+
+
+var BrowserInterface = function (options, logger) {
     var browser = this;
 
     this.events = new EventEmitter();
     this.userAgent = false;
     this.socket = null;
-    _.extend(this, options);
+    this.checked = false;
+    this.captureHostname = 'localhost';
 
     function onServerHello() {
         logger.trace('Sending client_hello for %s', browser.name);
@@ -23,6 +28,16 @@ var Browser = function (options, logger) {
         logger.info('Server redirect: %s', data.url);
         browser.open(data.url);
         browser.events.emit('redirect', data.url);
+    }
+
+    function listen(url) {
+        logger.trace('Browser %s connecting to %s', browser.name, url);
+        var socket = browser.socket = io.connect(url);
+        socket.on('server_hello', onServerHello);
+        socket.on('redirect', onServerRedirect);
+        socket.on('message', function (data) {
+            logger.trace('Browser %s message: %s', browser.name, JSON.stringify(data));
+        });
     }
 
     this.open = function (url, returnUrl) {
@@ -54,30 +69,38 @@ var Browser = function (options, logger) {
             }
 
             browser.userAgent = req.headers['user-agent'] + ' @ ' + os.hostname();
+            res.write(checkFile + '\n');
             res.end();
-            browserProcess.kill();
+
+            if (browserProcess) {
+                browserProcess.kill();
+            }
+
             server.close();
 
-            browser.events.emit('checked');
+            browser.checked = true;
             logger.info('Browser %s checked & ready.', browser.name);
+            browser.events.emit('checked');
+
             cb(browser);
         }).listen(function () {
             var address = server.address();
 
-            // windows is pretty stupid, and doesn't understand 0.0.0.0
-            browserProcess = browser.open('http://localhost:' + address.port + '/');
+            browserProcess = browser.open('http://' + browser.captureHostname + ':' + address.port + '/');
         });
     };
 
     this.listen = function (url) {
-        logger.trace('Browser %s connecting to %s', browser.name, url);
-        var socket = browser.socket = io.connect(url);
-        socket.on('server_hello', onServerHello);
-        socket.on('redirect', onServerRedirect);
-        socket.on('message', function (data) {
-            logger.trace('Browser %s message: %s', browser.name, JSON.stringify(data));
-        });
-    }
+        if (browser.checked) {
+            listen(url);
+        } else {
+            browser.events.once('checked', function () {
+                listen(url);
+            });
+        }
+    };
+
+    _.extend(this, options);
 };
 
-module.exports = Browser;
+module.exports = BrowserInterface;

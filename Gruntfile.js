@@ -55,9 +55,9 @@ module.exports = function (grunt) {
         nodewebkit: {
             options: {
                 build_dir: './webkitbuilds', // Where the build version of my node-webkit app is saved
-                mac: true, // We want to build it for mac
-                win: true, // We want to build it for win
-                linux32: true, // We don't need linux32
+                mac: false, // We want to build it for mac
+                win: false, // We want to build it for win
+                linux32: false, // We don't need linux32
                 linux64: true, // We don't need linux64
                 version: '0.10.2'
 //                mac_icns: '.tmp/styles/icons/icon.icns'
@@ -88,7 +88,9 @@ module.exports = function (grunt) {
     // Default task.
     grunt.registerTask('default', ['jshint']);
     grunt.registerTask('build', ['clean:build', 'copy:build', 'package', 'install-dependencies:build',
-        'nodewebkit', 'shell:dmg']);
+        'nodewebkit',
+        //'shell:dmg'
+    ]);
 
     grunt.registerTask('package', function () {
         var cfg = grunt.config.get('pkgGui');

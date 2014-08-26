@@ -35,6 +35,21 @@ var DEFAULT_CMD = {
     win32: getChromeExe('Chrome')
 };
 
+
+var deleteFolderRecursive = function (path) {
+    if (fs.existsSync(path)) {
+        fs.readdirSync(path).forEach(function (file, index) {
+            var curPath = path + "/" + file;
+            if (fs.lstatSync(curPath).isDirectory()) { // recurse
+                deleteFolderRecursive(curPath);
+            } else { // delete file
+                fs.unlinkSync(curPath);
+            }
+        });
+        fs.rmdirSync(path);
+    }
+};
+
 /**
  * Returns cmd & args for spawn
  * @param url
@@ -51,7 +66,7 @@ module.exports = {
     args: function () {
         var tmpDir = os.tmpdir() + '/tda' + Math.floor(Math.random() * 1000);
         if (fs.existsSync(tmpDir)) {
-            fs.rmdirSync(tmpDir);
+            deleteFolderRecursive(tmpDir);
         }
 
         fs.mkdirSync(tmpDir);

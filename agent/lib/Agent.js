@@ -1,15 +1,18 @@
 var async = require('async'),
     http = require('http'),
     _ = require('lodash'),
-    Browser = require('./Browser'),
+    browsers = require('./browsers'),
+    BrowserInterface = require('./BrowserInterface'),
     EventEmitter = require('events').EventEmitter;
 
 var Agent = function (config, logger) {
     this.events = new EventEmitter();
-    var browsers = this.browsers = _.map(config.browsers, function (options) {
-            return new Browser(options, logger);
-        }),
-        agent = this;
+
+    browsers = this.browsers = _.map(browsers, function (options) {
+        return new BrowserInterface(options, logger);
+    });
+
+    var agent = this;
 
     this.check = function (checkCallback) {
         async.each(browsers, function (browser, cb) {
