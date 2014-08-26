@@ -1,10 +1,8 @@
 {
     "serverUrl": "http://somewhere:8080",
     "browsers": [
-        {
-            "name": "Chrome",
-            "cmd": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-            "args": ["--no-default-browser-check", "--no-first-run", "--disable-default-apps", "--disable-popup-blocking", "--disable-translate"]
-        }
+        {"name": "Chrome"},
+        {"name": "Firefox"},
+        {"name": "IE9 - Win7"}
     ]
 }
