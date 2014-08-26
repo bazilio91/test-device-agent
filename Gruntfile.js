@@ -3,6 +3,8 @@ module.exports = function (grunt) {
 
     // Project configuration.
     grunt.initConfig({
+        pkg: grunt.file.readJSON('package.json'),
+        pkgGui: grunt.file.readJSON('./gui/package.json'),
         // Task configuration.
         jshint: {
             options: {
@@ -32,6 +34,14 @@ module.exports = function (grunt) {
             gruntfile: {
                 files: '<%= jshint.gruntfile.src %>',
                 tasks: ['jshint:gruntfile']
+            }
+        },
+        'install-dependencies': {
+            build: {
+                options: {
+                    cwd: './.tmp',
+                    isDevelopment: false
+                }
             }
         },
         copy: {
@@ -73,10 +83,17 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-node-webkit-builder');
     grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks('grunt-install-dependencies');
     grunt.loadNpmTasks('grunt-shell');
 
     // Default task.
     grunt.registerTask('default', ['jshint']);
-    grunt.registerTask('build', ['clean:build', 'copy:build', 'nodewebkit', 'shell:dmg']);
+    grunt.registerTask('build', ['clean:build', 'copy:build', 'package', 'install-dependencies:build',
+        'nodewebkit', 'shell:dmg']);
 
+    grunt.registerTask('package', function () {
+        var cfg = grunt.config.get('pkgGui');
+        cfg.dependencies = grunt.config.get('pkg').dependencies;
+        grunt.file.write('./.tmp/package.json', JSON.stringify(cfg));
+    });
 };

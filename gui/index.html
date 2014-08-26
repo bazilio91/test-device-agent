@@ -22,8 +22,6 @@
     var gui = require('nw.gui'),
             win = gui.Window.get();
 
-    win.hide();
-
     var icon;
     if (platform === 'darwin') {
         icon = 'assets/icon.tiff';
@@ -35,17 +33,22 @@
 
     // Give it a menu
     var menu = new gui.Menu();
-    _.each(agent.browsers, function (browser) {
-        browser.gui = {
-            tray: new gui.MenuItem({label: browser.name, enabled: browser.userAgent !== false})
-        };
+    if (agent.browsers.length !== 0) {
+        _.each(agent.browsers, function (browser) {
+            browser.gui = {
+                tray: new gui.MenuItem({label: browser.name, enabled: browser.userAgent !== false})
+            };
 
-        browser.events.on('checked', function () {
-            browser.gui.tray.enabled = browser.userAgent !== false;
+            browser.events.on('checked', function () {
+                browser.gui.tray.enabled = browser.userAgent !== false;
+            });
+
+            menu.append(browser.gui.tray);
         });
+    } else {
+        menu.append(new gui.MenuItem({label: 'No browsers configured', enabled: false}))
+    }
 
-        menu.append(browser.gui.tray);
-    });
 
     tray.menu = menu;
 </script>
