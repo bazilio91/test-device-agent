@@ -37,12 +37,11 @@ module.exports = function (grunt) {
             }
         },
         'install-dependencies': {
-            build: {
-                options: {
-                    cwd: './.tmp',
-                    isDevelopment: false
-                }
-            }
+            options: {
+                cwd: '.tmp',
+                isDevelopment: false
+            },
+            build: {}
         },
         copy: {
             build: {

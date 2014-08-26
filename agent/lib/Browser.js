@@ -1,6 +1,7 @@
 var spawn = require('child_process').spawn,
     http = require('http'),
     _ = require('lodash'),
+    os = require('os'),
     io = require('socket.io-client'),
     EventEmitter = require('events').EventEmitter;
 
@@ -25,10 +26,23 @@ var Browser = function (options, logger) {
     }
 
     this.open = function (url, returnUrl) {
-        var args = browser.args;
-        args.push(url + (returnUrl ? '?return_url=' + returnUrl : ''));
+        var args = _.result(browser, 'args'),
+            urlInArgs = false;
 
-        return spawn(options.cmd, args);
+        url = url + (returnUrl ? '?return_url=' + returnUrl : '');
+
+        _.each(args, function (arg, i) {
+            if (arg === '%url%') {
+                args[i] = url;
+                urlInArgs = true;
+            }
+        });
+
+        if (!urlInArgs) {
+            args.push(url);
+        }
+
+        return spawn(_.result(options, 'cmd'), args);
     };
 
     this.check = function (cb) {
@@ -39,7 +53,7 @@ var Browser = function (options, logger) {
                 res.end();
             }
 
-            browser.userAgent = req.headers['user-agent'];
+            browser.userAgent = req.headers['user-agent'] + ' @ ' + os.hostname();
             res.end();
             browserProcess.kill();
             server.close();
@@ -49,7 +63,9 @@ var Browser = function (options, logger) {
             cb(browser);
         }).listen(function () {
             var address = server.address();
-            browserProcess = browser.open('http://' + address.address + ':' + address.port + '/');
+
+            // windows is pretty stupid, and doesn't understand 0.0.0.0
+            browserProcess = browser.open('http://localhost:' + address.port + '/');
         });
     };
 
