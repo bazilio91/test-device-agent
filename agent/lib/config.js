@@ -1,35 +1,35 @@
 var fs = require('fs'),
-    isNodeWebkit = false,
-    _ = require('lodash'),
-    logger = require('./logger'),
-    config = {
-        serverUrl: '',
-        browsers: []
-    };
+  isNodeWebkit = false,
+  _ = require('lodash'),
+  logger = require('./logger'),
+  config = {
+    serverUrl: '',
+    browsers: []
+  };
 
 try {
-    isNodeWebkit = (typeof process.versions['node-webkit'] !== "undefined");
+  isNodeWebkit = (typeof process.versions['node-webkit'] !== "undefined");
 } catch (e) {
-    isNodeWebkit = false;
+  isNodeWebkit = false;
 }
 
 function getUserHome() {
-    return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
+  return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
 }
 
 var configPath = __dirname + '/../..',
-    browsersPath = __dirname + '/../../browsers';
+  browsersPath = __dirname + '/../../browsers';
 
 if (isNodeWebkit) {
-    configPath = getUserHome() + '/.test-device-agent';
+  configPath = getUserHome() + '/.test-device-agent';
 
-    if (!fs.existsSync(configPath)) {
-        fs.mkdirSync(configPath);
-    }
+  if (!fs.existsSync(configPath)) {
+    fs.mkdirSync(configPath);
+  }
 
-    if (!fs.existsSync(browsersPath)) {
-        fs.mkdirSync(browsersPath);
-    }
+  if (!fs.existsSync(browsersPath)) {
+    fs.mkdirSync(browsersPath);
+  }
 }
 config.browsersPath = browsersPath;
 
@@ -37,15 +37,15 @@ fs.writeFileSync(browsersPath + '/index.js', fs.readFileSync(__dirname + '/brows
 
 
 if (fs.existsSync(configPath + '/config.json')) {
-    logger.debug('Loading config from %s', configPath + '/config.json');
-    _.extend(config, JSON.parse(fs.readFileSync(configPath + '/config.json', 'utf-8')) || {});
+  logger.debug('Loading config from %s', configPath + '/config.json');
+  _.extend(config, JSON.parse(fs.readFileSync(configPath + '/config.json', 'utf-8')) || {});
 }
 
 logger.debug('Saving config to %s', configPath + '/config.json');
 fs.writeFileSync(configPath + '/config.json', JSON.stringify(config));
 
 if (!config.serverUrl) {
-    throw new Error('config.serverUrl not set!');
+  throw new Error('config.serverUrl not set!');
 }
 
 module.exports = config;
