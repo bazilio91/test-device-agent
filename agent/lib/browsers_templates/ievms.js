@@ -49,7 +49,7 @@ _.each(iectrl.IEVM.names, function (ievm) {
         });
       },
 
-      init: function () {
+      initVm: function () {
         browser.captureHostname = iectrl.IEVM.hostIp;
         browser.vm = iectrl.IEVM.find(browser.name)[0];
         if (browser.installing) {
@@ -57,7 +57,6 @@ _.each(iectrl.IEVM.names, function (ievm) {
         }
 
         browser.vm.missing().then(function (missing) {
-          console.log(missing);
           if (missing) {
             browser.installing = true;
             logger.warn('IEVM %s missing, installing!', browser.name);
@@ -73,7 +72,7 @@ _.each(iectrl.IEVM.names, function (ievm) {
       }
     };
 
-    browser.init();
+    browser.initVm();
 
     return browser;
   });

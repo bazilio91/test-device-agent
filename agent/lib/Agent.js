@@ -1,6 +1,7 @@
 var async = require('async'),
   http = require('http'),
   _ = require('lodash'),
+  fs = require('fs'),
   browsers = require('./browsers'),
   BrowserInterface = require('./BrowserInterface'),
   EventEmitter = require('events').EventEmitter;
@@ -16,7 +17,10 @@ var Agent = function (config, logger) {
 
   this.check = function (checkCallback) {
     async.each(browsers, function (browser, cb) {
-      browser.check(cb);
+      browser.init();
+      browser.events.on('init', function () {
+        browser.check(cb);
+      })
     }, function () {
       if (checkCallback) {
         checkCallback(browsers);
@@ -38,7 +42,6 @@ var Agent = function (config, logger) {
 
   this.events.on('checked', this.start);
   this.check();
-
 };
 
 module.exports = Agent;
